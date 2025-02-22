@@ -1,7 +1,5 @@
-// Initialize the map
 var map = L.map('map').setView([0, 0], 2);
 
-// Add OpenStreetMap layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors',
 }).addTo(map);
@@ -24,17 +22,13 @@ L.control.nearestPoint = function(opts) {
   return new L.Control.NearestPoint(opts);
 }
 
-// Add the custom control to the map
 L.control.nearestPoint({ position: 'topright' }).addTo(map);
 
-// Array to store points of interest
 let points = [];
 let editIndex = null;
 
-// Clear user-created points from LocalStorage on page load
 localStorage.removeItem('userPoints');
 
-// Load points of interest from JSON
 fetch('/javascripts/points.json')
     .then(response => response.json())
     .then(data => {
@@ -44,8 +38,6 @@ fetch('/javascripts/points.json')
     });
 
 
-// Function to add a marker to the map
-// Function to add a marker to the map
 function addMarker(point) {
   const popupContent = `
     <div class="popup-content text-center position-relative">
@@ -63,14 +55,12 @@ function addMarker(point) {
       .bindPopup(popupContent);
 }
 
-// Function to show the image modal
 function showImageModal(src, title) {
   document.getElementById('modalImage').src = src;
   document.getElementById('imageModalLabel').innerText = title;
   var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   imageModal.show();
 }
-// Function to update the table of points of interest
 function updateTable() {
   const tbody = document.querySelector('#tablaPuntos tbody');
   tbody.innerHTML = '';
@@ -91,7 +81,6 @@ function updateTable() {
   });
 }
 
-// Function to confirm deletion of a point of interest
 function confirmDeletePoint(index, isInitial) {
   swal({
     title: "¿Estás seguro?",
@@ -112,7 +101,6 @@ function confirmDeletePoint(index, isInitial) {
       });
 }
 
-// Function to delete a point of interest
 function deletePoint(index, isInitial) {
   points.splice(index, 1);
   updateTable();
@@ -124,7 +112,6 @@ function deletePoint(index, isInitial) {
   points.forEach(addMarker);
 }
 
-// Function to show the edit modal and populate the form
 function showEditModal(index) {
   const point = points[index];
   document.getElementById('editTitulo').value = point.title;
@@ -134,16 +121,13 @@ function showEditModal(index) {
   document.getElementById('editCategoria').value = point.categoria;
   editIndex = index;
 
-  // Quitar el atributo 'hidden' para mostrar el modal
   document.getElementById('editModal').removeAttribute('hidden');
 }
 
-// Agrega un listener al botón de cerrar el modal
 document.getElementById('closeModal').addEventListener('click', function () {
   document.getElementById('editModal').setAttribute('hidden', '');
 });
 
-// Handle form submission to add a new point of interest
 document.getElementById('formPunto').addEventListener('submit', function(event) {
   event.preventDefault();
 
@@ -180,13 +164,11 @@ document.getElementById('formPunto').addEventListener('submit', function(event) 
     addMarker(newPoint);
     updateTable();
 
-    // Clear the form
     document.getElementById('formPunto').reset();
   };
   reader.readAsDataURL(foto);
 });
 
-// Function to calculate the distance between two points using the Haversine formula
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -198,7 +180,6 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   return R * c; // Distance in kilometers
 }
 
-// Function to find the nearest point of interest to the user's location
 function findNearestPoint(userLat, userLng, category) {
   let nearestPoint = null;
   let minDistance = Infinity;
@@ -215,7 +196,6 @@ function findNearestPoint(userLat, userLng, category) {
 
   return nearestPoint;
 }
-// Function to get the user's current position and show the nearest point of interest
 function showNearestPoint() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(position => {
@@ -250,7 +230,6 @@ function showNearestPoint() {
   }
 }
 
-// Handle form submission to edit a point of interest
 document.getElementById('formEditPunto').addEventListener('submit', function(event) {
   event.preventDefault();
   const title = document.getElementById('editTitulo').value;
@@ -275,10 +254,8 @@ document.getElementById('formEditPunto').addEventListener('submit', function(eve
       });
       points.forEach(addMarker);
 
-      // Hide the modal
       document.getElementById('editModal').setAttribute('hidden', '');
 
-      // Show success alert
       swal({
         title: "Éxito",
         text: "¡Cambios guardados con éxito!",
@@ -302,10 +279,8 @@ document.getElementById('formEditPunto').addEventListener('submit', function(eve
     });
     points.forEach(addMarker);
 
-    // Hide the modal
     document.getElementById('editModal').setAttribute('hidden', '');
 
-    // Show success alert
     swal({
       title: "Éxito",
       text: "¡Cambios guardados con éxito!",
@@ -320,9 +295,23 @@ document.getElementById('formEditPunto').addEventListener('submit', function(eve
 document.addEventListener('DOMContentLoaded', function() {
   const categoriaSelect = document.getElementById('categoria');
 
-  // Filter points based on selected category
+  fetch('/javascripts/points.json')
+      .then(response => response.json())
+      .then(data => {
+        points = data;
+        points.forEach(addMarker);
+        updateTable();
+
+        const savedCategory = localStorage.getItem('selectedCategory');
+        if (savedCategory) {
+          categoriaSelect.value = savedCategory;
+          filterPointsByCategory(savedCategory);
+        }
+      });
+
   categoriaSelect.addEventListener('change', function() {
     const selectedCategory = categoriaSelect.value;
+    localStorage.setItem('selectedCategory', selectedCategory);
     filterPointsByCategory(selectedCategory);
   });
 
