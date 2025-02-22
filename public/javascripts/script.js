@@ -38,7 +38,7 @@ fetch('/javascripts/points.json')
     });
 
 
-function addMarker(point) {
+function addMarker(point, index) {
   const popupContent = `
     <div class="popup-content text-center position-relative">
       <h5 class="mb-1">${point.title}</h5>
@@ -51,8 +51,9 @@ function addMarker(point) {
       </div>
     </div>
   `;
-  L.marker([point.lat, point.lng]).addTo(map)
+  const marker = L.marker([point.lat, point.lng]).addTo(map)
       .bindPopup(popupContent);
+  marker._leaflet_id = `marker-${index}`;
 }
 
 function showImageModal(src, title) {
@@ -68,7 +69,7 @@ function updateTable() {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${index + 1}</td>
-      <td>${point.title}</td>
+      <td id="row-${index}">${point.title}</td>
       <td>${point.lat}</td>
       <td>${point.lng}</td>
       <td>${point.categoria}</td>
@@ -78,9 +79,16 @@ function updateTable() {
       </td>
     `;
     tbody.appendChild(row);
+
+    // Add mouseover event to show popup
+    document.getElementById(`row-${index}`).addEventListener('mouseover', function () {
+      const marker = map._layers[`marker-${index}`];
+      if (marker) {
+        marker.openPopup();
+      }
+    });
   });
 }
-
 function confirmDeletePoint(index, isInitial) {
   swal({
     title: "¿Estás seguro?",
@@ -295,10 +303,17 @@ document.getElementById('formEditPunto').addEventListener('submit', function(eve
 document.addEventListener('DOMContentLoaded', function() {
   const categoriaSelect = document.getElementById('categoria');
 
-  fetch('/javascripts/points.json')
+  fetch('/javascripts/points.geojson')
       .then(response => response.json())
       .then(data => {
-        points = data;
+        points = data.features.map(feature => ({
+          title: feature.properties.title,
+          description: feature.properties.description,
+          lat: feature.geometry.coordinates[1],
+          lng: feature.geometry.coordinates[0],
+          categoria: feature.properties.categoria,
+          foto: feature.properties.foto
+        }));
         points.forEach(addMarker);
         updateTable();
 
