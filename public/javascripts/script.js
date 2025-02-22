@@ -179,34 +179,39 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 }
 
 // Function to find the nearest point of interest to the user's location
-function findNearestPoint(userLat, userLng) {
+function findNearestPoint(userLat, userLng, category) {
   let nearestPoint = null;
   let minDistance = Infinity;
 
   points.forEach(point => {
-    const distance = haversineDistance(userLat, userLng, point.lat, point.lng);
-    if (distance < minDistance) {
-      minDistance = distance;
-      nearestPoint = point;
+    if (point.categoria === category || category === "") {
+      const distance = haversineDistance(userLat, userLng, point.lat, point.lng);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestPoint = point;
+      }
     }
   });
 
   return nearestPoint;
 }
-
 // Function to get the user's current position and show the nearest point of interest
 function showNearestPoint() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(position => {
       const userLat = position.coords.latitude;
       const userLng = position.coords.longitude;
-      const nearestPoint = findNearestPoint(userLat, userLng);
+      const selectedCategory = document.getElementById('categoria').value;
+      const nearestPoint = findNearestPoint(userLat, userLng, selectedCategory);
 
       if (nearestPoint) {
         const popupContent = `
           <div class="text-center position-relative">
             <h5 class="mb-1">${nearestPoint.title}</h5>
-            <p class="mb-2">${nearestPoint.description}</p>
+            <p><b>Descripción:</b> ${nearestPoint.description}</p>
+            <p><b>Latitud:</b> ${nearestPoint.lat}</p>
+            <p><b>Longitud:</b> ${nearestPoint.lng}</p>
+            <p><b>Categoría:</b> ${nearestPoint.categoria}</p>
             <div class="position-relative d-inline-block">
               <img src="${nearestPoint.foto}" alt="${nearestPoint.title}" class="img-fluid rounded" style="max-width: 150px; cursor: pointer;" onclick="showImageModal('${nearestPoint.foto}', '${nearestPoint.title}')">
             </div>
