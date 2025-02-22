@@ -146,16 +146,36 @@ document.getElementById('closeModal').addEventListener('click', function () {
 // Handle form submission to add a new point of interest
 document.getElementById('formPunto').addEventListener('submit', function(event) {
   event.preventDefault();
-  const title = document.getElementById('titulo').value;
-  const description = document.getElementById('descripcion').value;
-  const lat = parseFloat(document.getElementById('lat').value);
-  const lng = parseFloat(document.getElementById('lng').value);
-  const categoria = document.getElementById('categoria').value;
+
+  const title = document.getElementById('titulo').value.trim();
+  const description = document.getElementById('descripcion').value.trim();
+  const lat = document.getElementById('lat').value.trim();
+  const lng = document.getElementById('lng').value.trim();
+  const categoria = document.getElementById('categoria').value.trim();
   const foto = document.getElementById('foto').files[0];
+
+  let missingFields = [];
+
+  if (!title) missingFields.push('Título');
+  if (!description) missingFields.push('Descripción');
+  if (!lat) missingFields.push('Latitud');
+  if (!lng) missingFields.push('Longitud');
+  if (!categoria) missingFields.push('Categoría');
+  if (!foto) missingFields.push('Foto');
+
+  if (missingFields.length > 0) {
+    swal({
+      title: "Campos faltantes",
+      text: `Por favor, completa los siguientes campos: ${missingFields.join(', ')}`,
+      icon: "warning",
+      button: "Aceptar"
+    });
+    return;
+  }
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    const newPoint = { title, description, lat, lng, categoria, foto: e.target.result };
+    const newPoint = { title, description, lat: parseFloat(lat), lng: parseFloat(lng), categoria, foto: e.target.result };
     points.push(newPoint);
     addMarker(newPoint);
     updateTable();
