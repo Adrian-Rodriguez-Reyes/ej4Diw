@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Puntos de Interés</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+<body class="bg-light min-vh-100">
+<div class="bg-primary bg-gradient text-white py-4 mb-4 shadow-sm">
+  <div class="container">
+    <h1 class="text-center fw-bold display-5 mb-0">Gestión de Puntos de Interés</h1>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="card shadow-sm mb-5 border-0 rounded-3 overflow-hidden">
+    <div id="map" style="height: 500px;"></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm h-100 border-0 rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3">
+          <h2 class="h4 mb-0 text-primary fw-bold">
+            <i class="bi bi-plus-circle me-2"></i>Añadir nuevo punto
+          </h2>
+        </div>
+        <div class="card-body">
+          <form id="formPunto" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label for="titulo" class="form-label fw-semibold">Título</label>
+              <input type="text" class="form-control form-control-lg" id="titulo" required />
+            </div>
+            <div class="mb-3">
+              <label for="descripcion" class="form-label fw-semibold">Descripción</label>
+              <textarea class="form-control" id="descripcion" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="lat" class="form-label fw-semibold">Latitud</label>
+              <input type="number" step="any" class="form-control" id="lat" required />
+            </div>
+            <div class="mb-3">
+              <label for="lng" class="form-label fw-semibold">Longitud</label>
+              <input type="number" step="any" class="form-control" id="lng" required />
+            </div>
+            <div class="mb-4">
+              <label for="categoria" class="form-label fw-semibold">Categoría</label>
+              <input type="text" class="form-control" id="categoria" list="categoriaList" required />
+              <datalist id="categoriaList">
+                <option value="Histórico">
+                <option value="Monumento">
+                <option value="Cultural">
+                <option value="Natural">
+                <option value="Religioso">
+                <option value="Moderno">
+                <option value="Antiguo">
+                <option value="Turístico">
+                <option value="Educativo">
+                <option value="Recreativo">
+              </datalist>
+            </div>
+            <div class="mb-3">
+              <label for="foto" class="form-label fw-semibold">Foto</label>
+              <input type="file" class="form-control" id="foto" accept=".png, .jpeg, .jpg" required />
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+              Crear punto
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3">
+          <h2 class="h4 mb-0 text-primary fw-bold">
+            <i class="bi bi-geo-alt me-2"></i>Listado de puntos de interés
+          </h2>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tablaPuntos">
+              <thead class="table-light">
+              <tr>
+                <th class="px-4">ID</th>
+                <th>Título</th>
+                <th>Lat</th>
+                <th>Lng</th>
+                <th>Categoría</th>
+                <th class="text-end px-4">Acciones</th>
+              </tr>
+              </thead>
+              <tbody>
+              <!-- Filas dinámicas generadas desde script.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="editModal" hidden class="position-fixed top-50 start-50 translate-middle shadow-lg rounded-3 bg-white p-4" style="z-index: 1050; min-width: 400px; max-width: 90vw;">
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title fw-bold text-primary" id="editModalLabel">
+      <i class="bi bi-pencil-square me-2"></i>Editar Punto de Interés
+    </h5>
+    <button type="button" id="closeModal" class="btn-close" aria-label="Close"></button>
+  </div>
+  <div class="modal-body pt-4">
+    <form id="formEditPunto" class="needs-validation" novalidate>
+      <div class="mb-3">
+        <label for="editTitulo" class="form-label fw-semibold">Título</label>
+        <input type="text" class="form-control form-control-lg" id="editTitulo" required />
+      </div>
+      <div class="mb-3">
+        <label for="editDescripcion" class="form-label fw-semibold">Descripción</label>
+        <input type="text" class="form-control" id="editDescripcion" required />
+      </div>
+      <div class="mb-3">
+        <label for="editLat" class="form-label fw-semibold">Latitud</label>
+        <input type="number" step="any" class="form-control" id="editLat" required />
+      </div>
+      <div class="mb-3">
+        <label for="editLng" class="form-label fw-semibold">Longitud</label>
+        <input type="number" step="any" class="form-control" id="editLng" required />
+      </div>
+      <div class="mb-4">
+        <label for="editCategoria" class="form-label fw-semibold">Categoría</label>
+        <input type="text" class="form-control" id="editCategoria" list="categoriaList" required />
+      </div>
+      <div class="mb-3">
+        <label for="editFoto" class="form-label fw-semibold">Foto</label>
+        <input type="file" class="form-control" id="editFoto" accept=".png, .jpeg, .jpg" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg w-100">
+        Guardar cambios
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" alt="Image" class="img-fluid">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../javascripts/script.js"></script>
+</body>
+</html>

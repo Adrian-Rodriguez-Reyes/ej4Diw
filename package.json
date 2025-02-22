@@ -1,0 +1,29 @@
+{
+  "name": "trabajo4diw",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "bootstrap": "^5.3.3",
+    "cookie-parser": "~1.4.4",
+    "datatables.net": "^2.2.2",
+    "datatables.net-dt": "^2.2.2",
+    "debug": "~2.6.9",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "http-errors": "~1.6.3",
+    "leaflet": "^1.9.4",
+    "morgan": "~1.9.1",
+    "select2": "^4.1.0-rc.0",
+    "sweetalert": "^2.1.2"
+  },
+  "main": "app.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": ""
+}
